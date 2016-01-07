@@ -1,0 +1,24 @@
+{
+  "name": "babel-register-deep",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "babel-register": "^6.3.13",
+    "findup": "^0.1.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oztune/babel-register-deep.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oztune/babel-register-deep/issues"
+  },
+  "homepage": "https://github.com/oztune/babel-register-deep#readme"
+}
