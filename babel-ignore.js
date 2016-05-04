@@ -2,21 +2,38 @@ var Path = require('path')
 var fs = require('fs')
 var findUp = require('findup')
 
+function getPackageJsonAtFolder(path) {
+	try {
+		const string = fs.readFileSync(Path.join(path, 'package.json'), 'utf8')
+		return JSON.parse(string)
+	} catch (e) {
+		// No go
+		return null
+	}
+}
+
 function hasBabelConfigAtFolder(path) {
+	var packageJson = getPackageJsonAtFolder(path)
+
+	// Don't compile npm modules. We assume they're already compiled.
+	// This could be made an option if needed.
+	//
+	// REASON: We ran into an issue where the babylon package was providing
+	// Babel 5 config in its .babelrc, but our babel (v6) was trying to
+	// compile it.
+	if (packageJson && packageJson._npmVersion) {
+		return false
+	}
+
+	// Compile files with a .babelrc
 	if (fs.existsSync(Path.join(path, '.babelrc'))) {
 		// console.log('path has .babelrc', path)
 		return true
-	}
-	try {
-		const string = fs.readFileSync(Path.join(path, 'package.json'), 'utf8')
-		const json = JSON.parse(string)
-		if (json.babel) {
-			// console.log('path has json.package.babel', path)
-			return true
-		}
-	} catch (e) {
-		// No go
-		return false
+	}	
+
+	// Compile files with a 'babel' key in their package.json
+	if (packageJson && packageJson.babel) {
+		return true
 	}
 
 	return false
@@ -33,9 +50,6 @@ function isFileGovernedByBabelConfig(searchPath) {
 			// This file is not governed
 			return false
 		} else {
-			if (searchPath === '/Users/oz/projects/top-apps/node_modules/express/index.js') {
-				console.log('has babel config', searchPath)
-			}
 			// This file is governed
 			return true
 		}
