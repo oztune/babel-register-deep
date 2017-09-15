@@ -12,6 +12,27 @@ function getPackageJsonAtFolder(path) {
 	}
 }
 
+// NOTE: This is kind of a hack because it makes general
+// assumptions. If these prove not to be reliable enough,
+// we may need to take a white-list approach where we only
+// process projects that defined a flag in their package.json
+// like { "precompiled": false } (or something better).
+function isModulePreCompiled (path, packageJson) {
+	if (packageJson._npmVersion) {
+		return true
+	}
+
+	// Packages installed with yarn don't have that flag, so
+	// we resort to an even hackier assumption.
+	if (packageJson.scripts && packageJson.scripts.prepublish) {
+		return true
+	}
+
+	// console.log('not precompiled', path)
+
+	return false
+}
+
 function hasBabelConfigAtFolder(path) {
 	var packageJson = getPackageJsonAtFolder(path)
 
@@ -21,7 +42,7 @@ function hasBabelConfigAtFolder(path) {
 	// REASON: We ran into an issue where the babylon package was providing
 	// Babel 5 config in its .babelrc, but our babel (v6) was trying to
 	// compile it.
-	if (packageJson && packageJson._npmVersion) {
+	if (packageJson && isModulePreCompiled(path, packageJson)) {
 		return false
 	}
 
@@ -29,7 +50,12 @@ function hasBabelConfigAtFolder(path) {
 	if (fs.existsSync(Path.join(path, '.babelrc'))) {
 		// console.log('path has .babelrc', path)
 		return true
-	}	
+	}
+
+	// Babel 7 will support a js rc file as well
+	if (fs.existsSync(Path.join(path, '.babelrc.js'))) {
+		return true
+	}
 
 	// Compile files with a 'babel' key in their package.json
 	if (packageJson && packageJson.babel) {
