@@ -18,8 +18,17 @@ function getPackageJsonAtFolder(path) {
 // process projects that defined a flag in their package.json
 // like { "precompiled": false } (or something better).
 function isModulePreCompiled (path, packageJson) {
+	// This worked in npm v3
 	if (packageJson._npmVersion) {
 		return true
+	}
+
+	// This is for npm v5
+	if (packageJson._resolved) {
+		// Ex https://registry.npmjs.org/react-chartist/-/react-chartist-0.13.1.tgz
+		if (packageJson._resolved.indexOf('npmjs.org') >= 0) {
+			return true
+		}
 	}
 
 	// Packages installed with yarn don't have that flag, so
