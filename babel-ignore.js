@@ -36,6 +36,11 @@ function isModulePreCompiled (path, packageJson) {
 	if (packageJson.scripts && packageJson.scripts.prepublish) {
 		return true
 	}
+	// Even hackier for Yarn, if the package doesn't have
+	// that key (Needed for react-charting)
+	if (typeof packageJson.main === 'string' && packageJson.main.indexOf('dist/') === 0) {
+		return true
+	}
 
 	// console.log('not precompiled', path)
 
