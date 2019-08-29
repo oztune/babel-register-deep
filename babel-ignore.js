@@ -79,31 +79,90 @@ function hasBabelConfigAtFolder(path) {
 	return false
 }
 
+const cache = new Map()
+
 function isFileGovernedByBabelConfig(searchPath) {
+
+	const d = false//searchPath === '/Users/oz/projects/react/appfigures-site-react/node_modules/js-utils/function/memoize.js'
+
+	// Split it up
+	if (searchPath) {
+		let p = searchPath
+		do {
+			if (Path.basename(p) === 'node_modules') {
+				if (d) console.log('A4')
+				// if (searchPath === '/Users/oz/projects/react/appfigures-site-react/node_modules/js-utils/function/memoize.js') {
+					// console.log('HI', p, cache)
+				// }
+
+				break
+			}
+			if (d) console.log('A1', p)
+			if (cache.has(p)) {
+				if (d) console.log('A2', cache)
+				// console.log('Cache hit', p, cache)
+				return cache.get(p)
+			}
+			if (d) console.log('A3')
+			p = Path.dirname(p)
+		} while (p !== '/')
+	}
+
+	if (d) console.log('A5')
+
+	// console.log('cache miss', searchPath, cache)
+
 	try {
-		var path = findUp.sync(searchPath, function (path) {
-			if (Path.basename(path) === 'node_modules') return true
-			return hasBabelConfigAtFolder(path)
+		var path = findUp.sync(searchPath, function (path, ...args) {
+			let out
+
+			if (Path.basename(path) === 'node_modules') {
+				// cache.set(path, false)
+				return true
+			} else {
+				const out = hasBabelConfigAtFolder(path)
+				// cache.set(path, out)
+				return out
+			}
 		})
 
 		if (Path.basename(path) === 'node_modules') {
+			// HACK
+			let pp = searchPath
+			while (Path.basename(Path.dirname(pp)) !== 'node_modules') {
+				pp = Path.dirname(pp)
+			}
+			// console.log('\n\nAAA', searchPath, '\n', pp, '\n--')
+			cache.set(pp, false)
+			// console.log('NOT GOVERNED', path)
 			// This file is not governed
 			return false
 		} else {
+			cache.set(path, true)
 			// This file is governed
+			// console.log('GOVERNED', path)
 			return true
 		}
 	} catch (e) {
+		cache.set(path, false)
 		// No node_modules or babel config encountered up the hierarchy
 		return false
 	}
 }
 
+let total = 0
+
 module.exports = function (path) {
+	// console.log(total)
+	const start = (new Date()).getTime()
+
+	// console.log(cache)
 	if (isFileGovernedByBabelConfig(path)) {
+		total += ((new Date()).getTime() - start)
 		// console.log('babel-register will compile', path)
 		return false
 	} else {
+		total += ((new Date()).getTime() - start)
 		return true
 	}
 }
