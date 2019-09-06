@@ -81,10 +81,11 @@ function hasBabelConfigAtFolder(path) {
 
 // Here we store paths that we know are either
 // governed or not governed by a babel config.
-// NOTE we only keep that path of the folder with
+//
+// NOTE: we only keep that path of the folder with
 // the babel config file in it. To check if an arbitrary
 // path if governed we look up its hierarchy until we get
-// to one of the folders in the cache (see the top of isFileGovernedByBabelConfig.
+// to one of the folders in the cache (see the top of isFileGovernedByBabelConfig).
 //
 // We also cache folders that we know are not governed by a babel config.
 // The way we know is that we looked up the entire hierarchy and reached a
