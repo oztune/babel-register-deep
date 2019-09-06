@@ -148,7 +148,6 @@ function isFileGovernedByBabelConfig(searchPath) {
 			return false
 		} else {
 			// This file is governed
-			// console.log('GOVERNED', path)
 			
 			// We want to cache that this current folder
 			// is governed.
@@ -157,13 +156,12 @@ function isFileGovernedByBabelConfig(searchPath) {
 			return true
 		}
 	} catch (e) {
-		cache.set(path, false)
 		// No node_modules or babel config encountered up the hierarchy
+		//
+		// NOTE: How can we store this result in the cache?
 		return false
 	}
 }
-
-let total = 0
 
 module.exports = function (path) {
 	if (isFileGovernedByBabelConfig(path)) {
