@@ -79,36 +79,39 @@ function hasBabelConfigAtFolder(path) {
 	return false
 }
 
-const cache = new Map()
+// Here we store paths that we know are either
+// governed or not governed by a babel config.
+// NOTE we only keep that path of the folder with
+// the babel config file in it. To check if an arbitrary
+// path if governed we look up its hierarchy until we get
+// to one of the folders in the cache (see the top of isFileGovernedByBabelConfig.
+//
+// We also cache folders that we know are not governed by a babel config.
+// The way we know is that we looked up the entire hierarchy and reached a
+// node_modules folder before finding any governed folders. When that happens
+// we cache the name of the folder right after node_modules in the path.
+const cache = new Map/*<string, boolean>*/()
 
 function isFileGovernedByBabelConfig(searchPath) {
 
-	const d = false//searchPath === '/Users/oz/projects/react/appfigures-site-react/node_modules/js-utils/function/memoize.js'
-
-	// Split it up
+	// We try to cache as much information as we can
+	// to avoid redundant HD access. This has reduced our
+	// initial compile time by ~30%.
 	if (searchPath) {
 		let p = searchPath
 		do {
 			if (Path.basename(p) === 'node_modules') {
-				if (d) console.log('A4')
-				// if (searchPath === '/Users/oz/projects/react/appfigures-site-react/node_modules/js-utils/function/memoize.js') {
-					// console.log('HI', p, cache)
-				// }
-
+				// We don't keep searching because
+				// we don't want to use the host project's
+				// settings.
 				break
 			}
-			if (d) console.log('A1', p)
 			if (cache.has(p)) {
-				if (d) console.log('A2', cache)
-				// console.log('Cache hit', p, cache)
 				return cache.get(p)
 			}
-			if (d) console.log('A3')
 			p = Path.dirname(p)
 		} while (p !== '/')
 	}
-
-	if (d) console.log('A5')
 
 	// console.log('cache miss', searchPath, cache)
 
@@ -117,30 +120,39 @@ function isFileGovernedByBabelConfig(searchPath) {
 			let out
 
 			if (Path.basename(path) === 'node_modules') {
-				// cache.set(path, false)
+				// We don't keep searching because
+				// we don't want to use the host project's
+				// settings.
 				return true
 			} else {
 				const out = hasBabelConfigAtFolder(path)
-				// cache.set(path, out)
 				return out
 			}
 		})
 
 		if (Path.basename(path) === 'node_modules') {
-			// HACK
+			// This file is not governed
+
+			// We want to cache that the folder right after
+			// node_modules is not governed.
+			//
+			// Quick hack to grab the folder right before this
+			// one in the chain. We could do this better but it works for now.
 			let pp = searchPath
 			while (Path.basename(Path.dirname(pp)) !== 'node_modules') {
 				pp = Path.dirname(pp)
 			}
-			// console.log('\n\nAAA', searchPath, '\n', pp, '\n--')
 			cache.set(pp, false)
-			// console.log('NOT GOVERNED', path)
-			// This file is not governed
+			
 			return false
 		} else {
-			cache.set(path, true)
 			// This file is governed
 			// console.log('GOVERNED', path)
+			
+			// We want to cache that this current folder
+			// is governed.
+			cache.set(path, true)
+			
 			return true
 		}
 	} catch (e) {
@@ -153,16 +165,10 @@ function isFileGovernedByBabelConfig(searchPath) {
 let total = 0
 
 module.exports = function (path) {
-	// console.log(total)
-	const start = (new Date()).getTime()
-
-	// console.log(cache)
 	if (isFileGovernedByBabelConfig(path)) {
-		total += ((new Date()).getTime() - start)
 		// console.log('babel-register will compile', path)
 		return false
 	} else {
-		total += ((new Date()).getTime() - start)
 		return true
 	}
 }
