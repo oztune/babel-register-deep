@@ -1,3 +1,5 @@
+**Deprecated** Use babel-ignore instead.
+
 # babel-register-deep
 Like babel-register, but also compiles files in the `node_modules` folder with the following rules:
 - Modules with a `.babelrc` are included.
