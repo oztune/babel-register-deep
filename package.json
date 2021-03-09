@@ -7,6 +7,12 @@
     "@babel/register": "^7.0.0-beta.53",
     "findup": "^0.1.5"
   },
+  "peerDependencies": {
+    "@babel/core": "^7.1.6"
+  },
+  "peerDependenciesMeta": {
+    "@babel/core": { "optional": true }
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
